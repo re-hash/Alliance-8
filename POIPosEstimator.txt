@@ -1,0 +1,25 @@
+Right now, we're falling behind the POI as it rotates about the Y-axis. We should set the satellite position target to the future predicted position of the POI at the estimated time of arrival (ETA).
+
+PART I: Calculate ETA
+1) Variable D = the linear distance between the satellite and the POI.
+2) If D > 0.35, D*= pi/2 (for simplicity, we estimate the distance traveled around the asteroid as a semicircle). Otherwise, leave D as is.
+3) ETA = mathVecMag(Sphere's current velocity)*D
+
+PART II: Estimate position of POI at ETA
+Since the satellite rotates on the Y-axis...
+Let x = poiPos[0], let z = poiPos[2], and let θ = the angle the POI makes with the z-axis when it's sliced parallel to the XZ plane.
+x' = predicted x-position of POI
+z' = predicted z-position of POI
+
+I use Δθ instead of dθ for simplicity (this doesn't need to become an unnecessarily complex related rates problem).
+
+θ = arcsin(0.2x) = arccos(0.2z)
+x' = sin(arcsin(0.2x)+Δθ)/0.2
+z' = cos(arccos(0.2z)+Δθ)/0.2
+
+1) Evaluate the above function for Δθ = 0.1*ETA.
+2) Target the SPHERE to that point.
+
+
+
+
