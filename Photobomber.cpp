@@ -1,8 +1,3 @@
-//NOTE TO SELF:
-//  Maybe add something that resets picture counter when hit by flare.
-
-
-
 //--------------------------------------VARIABLES--------------------------------------//
 //Positioning
 ZRState myState;
@@ -26,6 +21,7 @@ int strategyType;
 
 void init()
 {
+    strategyType=0;
     //----Coordinates & Positioning----//
     zero[0]=0.0;
 	zero[1]=0.0;
@@ -39,13 +35,12 @@ void init()
 	if (myState[1] > 0)
 	{
 	    teamColor = 1;
-	    strategyType = 0;
+
 	    DEBUG(("We are Blue"));
 	}
 	else
 	{
 	    teamColor = 0;
-	    strategyType = 1;
 	    DEBUG(("We are Red"));
 	}
 	
@@ -110,154 +105,183 @@ void loop()
         api.setPositionTarget(safetyZone);
     }*/
     
-    
-    if (strategyType == 0) {
-        //----TargetPOI----//
-        if (time == 60 || time % 60 == 0)
+    if (0.9*game.getScore() > game.getOtherScore())
+    {
+        strategyType = 1;
+    }
+    else
+    {
+        if (time > 200)
         {
-            DEBUG(("\n  POIs Updated..."));
-            pastPOIs[0] = -1;
-            pastPOIs[1] = -1;
-            pastPOIs[2] = -1;
-            countPOI = 0;
-            
-            targetPOI = findClosestPOI(myPos, pastPOIs);
-            DEBUG(("\ntargetPOI: %d", targetPOI));
-            pastPOIs[countPOI] = targetPOI;
-            countPOI++;
-            
-            picturesTaken = 0;
-            
-        }
-        /*if (targetPOI > 2 || countPOI >= 3)
-        {
-            pastPOIs[0] = -1;
-            pastPOIs[1] = -1;
-            pastPOIs[2] = -1;
-            countPOI = 0;
-            
-            targetPOI = findClosestPOI(myPos, pastPOIs);
-            pastPOIs[countPOI] = targetPOI;
-            countPOI++;
-        }*/
-        
-        game.getPOILoc(poiPos, targetPOI);
-        
-        for (int i = 0; i<3; i++) 
-        { //Reset POI vector to half its original magnitude
-            poiPos[i] *= 0.5;
-        }
-        
-        float posTarget[3] = {poiPos[0]*3.9, poiPos[1]*3.9, poiPos[2]*3.9}; 
-        //Find coordinates for SPHERE to be at while taking pictures
-        float uploadTarget[3] = {poiPos[0]*7.25, poiPos[1]*7.25, poiPos[2]*7.25};
-        //Find coordinates for SPHERE to be at while uploading
-        
-        if (picturesTaken > 3)// && time > 60) 
-        { 
-        //If SPHERE has attempted more than 3 pictures (valid or not), move to next POI
-            if (countPOI == 3)
+            if (game.getScore() < game.getOtherScore())
             {
-                DEBUG(("\n  All POIs captured"));
-                pastPOIs[0] = -1;
-                pastPOIs[1] = -1;
-                pastPOIs[2] = -1;
-                countPOI = 0;
-            
-                targetPOI = findClosestPOI(myPos, pastPOIs);
-                pastPOIs[countPOI] = targetPOI;
-                countPOI++;
-                picturesTaken = 0;
-                DEBUG(("\n  Moving on~~"));
-                DEBUG(("\n  New targetPOI: %d", targetPOI));
+                strategyType = 1;
             }
             else
             {
-                targetPOI = findClosestPOI(myPos, pastPOIs);
-                pastPOIs[countPOI] = targetPOI;
-                countPOI++;
-            
-                picturesTaken = 0;
-                DEBUG(("\n Moving on~~"));
-                DEBUG(("\n targetPOI: %d", targetPOI));
+                strategyType = 0;
             }
         }
-        else { 
-        //Otherwise, continue taking pictures
-            facePos(poiPos, myPos);
-        }
-        
-        //----Collision Avoidance & Positioning----//
-        //float midpoint[3] = {(myPos[0]+posTarget[0])/2, (myPos[1]+posTarget[1])/2, (myPos[2]+posTarget[2])/2};
-        //float qtl1[3] = {(myPos[0]+midpoint[0])/2, (myPos[1]+midpoint[1])/2, (myPos[2]+midpoint[2])/2};
-        //float qtl3[3] = {(posTarget[0]+midpoint[0])/2, (posTarget[1]+midpoint[1])/2, (posTarget[2]+midpoint[2])/2};
-        
-        arcMove(posTarget);
-        /* if (mathVecMagnitude(midpoint,3) < 0.35) { 
-        // this part is really rough - with some tweaking of magnitudes and such, it might work better.
-            arcMove(midpoint, posTarget);
-        }
-        else { //Proceed to target coordinates as usual
-            /*if(mathVecMagnitude(qtl3, 3)>0.35)
-            {
-        		 if (mathVecMagnitude(qtl1,3)>0.35)
-        		 {
-        		 	api.setPositionTarget(posTarget);
-        		 }
-        		 else
-        		 {
-        		     arcMove(midpoint, posTarget);
-        		 }	
-            }
-            else
-            {
-            	arcMove(midpoint, posTarget);
-            }
-            */
-//        }
-        
-        if (game.getMemoryFilled()>0 && game.getScore() < targetScore) { //If SPHERE has a valid picture
-            DEBUG(("\n  Moving to upload"));
-            
-            float attTarget[3];
-            attTarget[0] = 0.64 -myPos[0]; // [0.64,0,0] is the position of Earth
-            attTarget[1] = 0 -myPos[1];
-            attTarget[2] = 0 -myPos[2];
-            mathVecNormalize(attTarget,3);
-            api.setAttitudeTarget(attTarget);
-            
-            api.setPositionTarget(uploadTarget); //Move to upload position
-            if (distanceVec(myPos, zero)> 0.53 && distanceVec(myPos,attTarget)> 0.05) //When SPHERE is out of both orbits, upload
-            {
-                float oldScore = game.getScore();
-                game.uploadPic();
-                if (oldScore < game.getScore())
-                {
-                    //DEBUG(("Upload was successful!"));
-                }
-                if (oldScore >= game.getScore())
-                {
-                    //DEBUG(("Upload failed!"));
-                }
-                
-            }
+        else
+        {
+            strategyType = 0;
         }
     }
-    else if (strategyType == 1) {
-        api.getOtherZRState(otherState);
-        
-        for (int i = 0; i<3; i++) {
-            otherPos[i] = 0.5*otherState[i];
-        }
-        
-        if (distanceVec(myPos,otherPos) < 0.38) {
-            arcMove(otherPos);
-            DEBUG((" | Heading to otherPos | "));
-        }
-        else {
-            arcMove(otherState);
-            DEBUG((" | Heading to otherState | "));
-        }
+    if (time > 16)
+    {
+            if (strategyType == 0) {
+                //----TargetPOI----//
+                if (time == 60 || time % 60 == 0)
+                {
+                    DEBUG(("\n  POIs Updated..."));
+                    pastPOIs[0] = -1;
+                    pastPOIs[1] = -1;
+                    pastPOIs[2] = -1;
+                    countPOI = 0;
+                    
+                    targetPOI = findClosestPOI(myPos, pastPOIs);
+                    DEBUG(("\ntargetPOI: %d", targetPOI));
+                    pastPOIs[countPOI] = targetPOI;
+                    countPOI++;
+                    
+                    picturesTaken = 0;
+                    
+                }
+                /*if (targetPOI > 2 || countPOI >= 3)
+                {
+                    pastPOIs[0] = -1;
+                    pastPOIs[1] = -1;
+                    pastPOIs[2] = -1;
+                    countPOI = 0;
+                    
+                    targetPOI = findClosestPOI(myPos, pastPOIs);
+                    pastPOIs[countPOI] = targetPOI;
+                    countPOI++;
+                }*/
+                
+                game.getPOILoc(poiPos, targetPOI);
+                
+                for (int i = 0; i<3; i++) 
+                { //Reset POI vector to half its original magnitude
+                    poiPos[i] *= 0.5;
+                }
+                
+                float posTarget[3] = {poiPos[0]*3.9, poiPos[1]*3.9, poiPos[2]*3.9}; 
+                //Find coordinates for SPHERE to be at while taking pictures
+                float uploadTarget[3] = {poiPos[0]*7.25, poiPos[1]*7.25, poiPos[2]*7.25};
+                //Find coordinates for SPHERE to be at while uploading
+                
+                if (picturesTaken > 3)// && time > 60) 
+                { 
+                //If SPHERE has attempted more than 3 pictures (valid or not), move to next POI
+                    if (countPOI == 3)
+                    {
+                        DEBUG(("\n  All POIs captured"));
+                        pastPOIs[0] = -1;
+                        pastPOIs[1] = -1;
+                        pastPOIs[2] = -1;
+                        countPOI = 0;
+                    
+                        targetPOI = findClosestPOI(myPos, pastPOIs);
+                        pastPOIs[countPOI] = targetPOI;
+                        countPOI++;
+                        picturesTaken = 0;
+                        DEBUG(("\n  Moving on~~"));
+                        DEBUG(("\n  New targetPOI: %d", targetPOI));
+                    }
+                    else
+                    {
+                        targetPOI = findClosestPOI(myPos, pastPOIs);
+                        pastPOIs[countPOI] = targetPOI;
+                        countPOI++;
+                    
+                        picturesTaken = 0;
+                        DEBUG(("\n Moving on~~"));
+                        DEBUG(("\n targetPOI: %d", targetPOI));
+                    }
+                }
+                else { 
+                //Otherwise, continue taking pictures
+                    facePos(poiPos, myPos);
+                }
+                
+                //----Collision Avoidance & Positioning----//
+                //float midpoint[3] = {(myPos[0]+posTarget[0])/2, (myPos[1]+posTarget[1])/2, (myPos[2]+posTarget[2])/2};
+                //float qtl1[3] = {(myPos[0]+midpoint[0])/2, (myPos[1]+midpoint[1])/2, (myPos[2]+midpoint[2])/2};
+                //float qtl3[3] = {(posTarget[0]+midpoint[0])/2, (posTarget[1]+midpoint[1])/2, (posTarget[2]+midpoint[2])/2};
+                
+                arcMove(posTarget);
+                /* if (mathVecMagnitude(midpoint,3) < 0.35) { 
+                // this part is really rough - with some tweaking of magnitudes and such, it might work better.
+                    arcMove(midpoint, posTarget);
+                }
+                else { //Proceed to target coordinates as usual
+                    /*if(mathVecMagnitude(qtl3, 3)>0.35)
+                    {
+                		 if (mathVecMagnitude(qtl1,3)>0.35)
+                		 {
+                		 	api.setPositionTarget(posTarget);
+                		 }
+                		 else
+                		 {
+                		     arcMove(midpoint, posTarget);
+                		 }	
+                    }
+                    else
+                    {
+                    	arcMove(midpoint, posTarget);
+                    }
+                    */
+        //        }
+                
+                if (game.getMemoryFilled()>0 && game.getScore() < targetScore) { //If SPHERE has a valid picture
+                    DEBUG(("\n  Moving to upload"));
+                    
+                    float attTarget[3];
+                    attTarget[0] = 0.64 -myPos[0]; // [0.64,0,0] is the position of Earth
+                    attTarget[1] = 0 -myPos[1];
+                    attTarget[2] = 0 -myPos[2];
+                    mathVecNormalize(attTarget,3);
+                    api.setAttitudeTarget(attTarget);
+                    
+                    api.setPositionTarget(uploadTarget); //Move to upload position
+                    if (distanceVec(myPos, zero)> 0.53 && distanceVec(myPos,attTarget)> 0.05) //When SPHERE is out of both orbits, upload
+                    {
+                        float oldScore = game.getScore();
+                        game.uploadPic();
+                        if (oldScore < game.getScore())
+                        {
+                            //DEBUG(("Upload was successful!"));
+                        }
+                        if (oldScore >= game.getScore())
+                        {
+                            //DEBUG(("Upload failed!"));
+                        }
+                        
+                    }
+                }
+            }
+            else if (strategyType == 1) {
+                api.getOtherZRState(otherState);
+                
+                for (int i = 0; i<3; i++) {
+                    otherPos[i] = 0.5*otherState[i];
+                }
+                
+                if (distanceVec(myPos,otherPos) < 0.38) {
+                    arcMove(otherPos);
+                    DEBUG((" | Heading to otherPos | "));
+                }
+                else {
+                    arcMove(otherState);
+                    DEBUG((" | Heading to otherState | "));
+                }
+            }
+    }
+    else
+    {
+        float initialShotTarget[3] = {-0.2, 0.0, -0.35};
+        api.setPositionTarget(initialShotTarget);
     }
 }
 
