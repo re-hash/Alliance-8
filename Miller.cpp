@@ -106,7 +106,7 @@ void loop(){
         }
 	else
 	{
-    	float target[3] = {0.1, 0.0, color*0.4};
+    	float target[3] = {0.0, 0.0, color*0.4};
     	//float uploadTarget[3] = {0.1, 0.0, color*0.6};
 
     	api.setPositionTarget(target);
