@@ -50,8 +50,10 @@ void loop(){
 	if (game.getNextFlare() <20 && game.getNextFlare() !=-1)
 	{
 	    api.setPositionTarget(darkzone);
-        if (distanceVec(myPos, zero)> 0.53) //When SPHERE is out of both orbits, upload
-                    {
+        float attTarget[3];
+    		mathVecSubtract(attTarget,earth,myPos,3);
+    		mathVecNormalize(attTarget,3);
+    		api.setAttitudeTarget(attTarget);
                         float oldScore = game.getScore();
                         
                         game.uploadPic();
@@ -65,7 +67,7 @@ void loop(){
                             //DEBUG(("Upload failed!"));
                         }
                     
-                }
+
         game.getPOILoc(poiSpyLoc, targetPOI);
         if (poiSpyLoc[2]>0)
         {
@@ -79,13 +81,13 @@ void loop(){
 	else if (elapsed>180 && game.getMemoryFilled()>0)
         {
             
-    	float uploadTarget[3] = {0.1, 0.0, color*0.6};
-            api.setPositionTarget(uploadTarget);
+    	//float uploadTarget[3] = {0.1, 0.0, color*0.6};
+            //api.setPositionTarget(uploadTarget);
             float attTarget[3];
     		mathVecSubtract(attTarget,earth,myPos,3);
     		mathVecNormalize(attTarget,3);
-    		api.setAttitudeTarget(attTarget);//Move to upload position
-            if (distanceVec(myPos, zero)> 0.53) //When SPHERE is out of both orbits, upload
+    		api.setAttitudeTarget(attTarget);
+            if (distanceVec(myPos, zero)> 0.0) //When SPHERE is out of both orbits, upload
             {
                 float oldScore = game.getScore();
                 
@@ -105,7 +107,7 @@ void loop(){
 	else
 	{
     	float target[3] = {0.1, 0.0, color*0.4};
-    	float uploadTarget[3] = {0.1, 0.0, color*0.6};
+    	//float uploadTarget[3] = {0.1, 0.0, color*0.6};
 
     	api.setPositionTarget(target);
     	
@@ -113,7 +115,7 @@ void loop(){
         if (game.getMemoryFilled()==game.getMemorySize()) 
         { //If SPHERE has a valid picture
             //DEBUG(("\n  Moving to upload"));
-            api.setPositionTarget(uploadTarget);
+            //api.setPositionTarget(uploadTarget);
             float attTarget[3];
     		mathVecSubtract(attTarget,earth,myPos,3);
     		mathVecNormalize(attTarget,3);
