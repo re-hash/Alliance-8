@@ -5,9 +5,11 @@ float earth[3];
 float darkzone[3];
 int picturesTaken;
 int color;
+int elapsed;
 
 void init(){
 	//This function is called once when your code is first loaded.
+	elapsed = 0;
     zero[0]=0.0;
 	zero[1]=0.0;
 	zero[2]=0.0;
@@ -74,6 +76,32 @@ void loop(){
             color = -1;
         }
 	}
+	else if (elapsed>180 && game.getMemoryFilled()>0)
+        {
+            
+    	float uploadTarget[3] = {0.1, 0.0, color*0.6};
+            api.setPositionTarget(uploadTarget);
+            float attTarget[3];
+    		mathVecSubtract(attTarget,earth,myPos,3);
+    		mathVecNormalize(attTarget,3);
+    		api.setAttitudeTarget(attTarget);//Move to upload position
+            if (distanceVec(myPos, zero)> 0.53) //When SPHERE is out of both orbits, upload
+            {
+                float oldScore = game.getScore();
+                
+                game.uploadPic();
+                if (oldScore < game.getScore())
+                {
+                    DEBUG(("Upload was successful!"));
+                    picturesTaken = 0;
+                }
+                if (oldScore >= game.getScore())
+                {
+                    DEBUG(("Upload failed!"));
+                }
+            
+            }
+        }
 	else
 	{
     	float target[3] = {0.1, 0.0, color*0.4};
@@ -82,7 +110,7 @@ void loop(){
     	api.setPositionTarget(target);
     	
     	facePos(zero, myPos);
-        if (game.getMemoryFilled()>0) 
+        if (game.getMemoryFilled()==game.getMemorySize()) 
         { //If SPHERE has a valid picture
             //DEBUG(("\n  Moving to upload"));
             api.setPositionTarget(uploadTarget);
@@ -105,10 +133,12 @@ void loop(){
                     //DEBUG(("Upload failed!"));
                 }
             
+            }
+       
         }
-    }
+
 	}
-	
+elapsed++;	
 }
 
 void facePos(float target[3], float myPos[3]){
