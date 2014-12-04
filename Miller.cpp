@@ -4,6 +4,7 @@ float zero[3];
 float earth[3];
 float darkzone[3];
 int picturesTaken;
+int color;
 
 void init(){
 	//This function is called once when your code is first loaded.
@@ -17,30 +18,69 @@ void init(){
 	darkzone[1]=0.0;
 	darkzone[2]=0.0;
 	picturesTaken = 0;
-
+	ZRState myState;
+	api.getMyZRState(myState);
+	float myPos[3] = {myState[0], myState[1], myState[2]};
+    if (myPos[1] > 0)
+    {
+        color = 1;
+        DEBUG(("We are blue!")); //Determine if SPHERE is red or blue
+    }
+    else
+    {
+        color = -1;
+        DEBUG(("We are red!"));
+    }
 	//IMPORTANT: make sure to set any variables that need an initial value.
 	//Do not assume variables will be set to 0 automatically!
 	
 }
 
 void loop(){
+	ZRState myState;
+    api.getMyZRState(myState);
+    float myPos[3] = {myState[0], myState[1], myState[2]};
+    float poiSpyLoc[3];
+    targetPOI = findClosestPOI(myPos);
+    	float poiLoc[3];
+    	game.getPOILoc(poiLoc, targetPOI);
 	//This function is called once per second.  Use it to control the satellite.
 	if (game.getNextFlare() <20 && game.getNextFlare() !=-1)
 	{
 	    api.setPositionTarget(darkzone);
-
+        if (distanceVec(myPos, zero)> 0.53) //When SPHERE is out of both orbits, upload
+                    {
+                        float oldScore = game.getScore();
+                        
+                        game.uploadPic();
+                        if (oldScore < game.getScore())
+                        {
+                            //DEBUG(("Upload was successful!"));
+                            picturesTaken = 0;
+                        }
+                        if (oldScore >= game.getScore())
+                        {
+                            //DEBUG(("Upload failed!"));
+                        }
+                    
+                }
+        game.getPOILoc(poiSpyLoc, targetPOI);
+        if (poiSpyLoc[2]>0)
+        {
+            color = 1;
+        }
+        else
+        {
+            color = -1;
+        }
 	}
 	else
 	{
-    	float target[3] = {0.1, 0.0, 0.4};
-    	float uploadTarget[3] = {0.1, 0.0, 0.6};
-    	ZRState myState;
-    	api.getMyZRState(myState);
-    	float myPos[3] = {myState[0], myState[1], myState[2]};
+    	float target[3] = {0.1, 0.0, color*0.4};
+    	float uploadTarget[3] = {0.1, 0.0, color*0.6};
+
     	api.setPositionTarget(target);
-    	targetPOI = findClosestPOI(myPos);
-    	float poiLoc[3];
-    	game.getPOILoc(poiLoc, targetPOI);
+    	
     	facePos(zero, myPos);
         if (game.getMemoryFilled()>0) 
         { //If SPHERE has a valid picture
