@@ -1,0 +1,5 @@
+In Miller:
+--If there's less than 8% fuel left, just go to the dark zone, upload, and stay there.
+
+In Photobomber:
+--
