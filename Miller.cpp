@@ -69,7 +69,7 @@ void loop(){
                     
 
         game.getPOILoc(poiSpyLoc, targetPOI);
-        if (poiSpyLoc[2]>0)
+        if (poiSpyLoc[2]>0.2)
         {
             color = -1;
         }
@@ -107,7 +107,6 @@ void loop(){
 	else
 	{
     	float target[3] = {0.0, 0.0, color*0.44};
-    	//float uploadTarget[3] = {0.1, 0.0, color*0.6};
 
     	api.setPositionTarget(target);
     	
@@ -140,6 +139,11 @@ void loop(){
         }
 
 	}
+	if (game.getFuelRemaining() <= 0)
+{
+game.turnOff();
+//DEBUG(("\nGame over man, game over!"));
+}
 elapsed++;	
 }
 
