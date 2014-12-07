@@ -47,7 +47,7 @@ void loop(){
     	float poiLoc[3];
     	game.getPOILoc(poiLoc, targetPOI);
 	//This function is called once per second.  Use it to control the satellite.
-	if (game.getNextFlare() <17 && game.getNextFlare() !=-1)
+	if (game.getNextFlare() <15 && game.getNextFlare() !=-1)
 	{
 	    api.setPositionTarget(darkzone);
         float attTarget[3];
@@ -106,15 +106,12 @@ void loop(){
         }
 	else
 	{
-    	
-    	float targetPOILoc[3];
-    	game.getPOILoc(targetPOILoc, targetPOI);
     	float target[3] = {0.0, 0.0, color*0.44};
     	//float uploadTarget[3] = {0.1, 0.0, color*0.6};
 
     	api.setPositionTarget(target);
     	
-    	facePos(zero, myPos); 
+    	facePos(zero, myPos);
         if (game.getMemoryFilled()==game.getMemorySize()) 
         { //If SPHERE has a valid picture
             //DEBUG(("\n  Moving to upload"));
@@ -123,7 +120,7 @@ void loop(){
     		mathVecSubtract(attTarget,earth,myPos,3);
     		mathVecNormalize(attTarget,3);
     		api.setAttitudeTarget(attTarget);//Move to upload position
-            if (distanceVec(myPos, zero)> 0.53) //When SPHERE is out of both orbits, upload
+            if (distanceVec(myPos, zero)> 0/*.53*/) //When SPHERE is out of both orbits, upload
             {
                 float oldScore = game.getScore();
                 
@@ -154,18 +151,18 @@ void facePos(float target[3], float myPos[3]){
 		mathVecNormalize(attTarget,3);
 		api.setAttitudeTarget(attTarget);
 		
-
+        if (distanceVec(myPos, target)< 0.50)
+        {
             //DEBUG(("The SPHERE is close enough to take a picture. ")); //    
             if (game.alignLine(targetPOI)==true)
             {
 
-                    //DEBUG(("\n  Pictures: %d", picturesTaken+1)); // 
-                    
+                    //DEBUG(("\n  Pictures: %d", picturesTaken+1)); //      
                     game.takePic(targetPOI);
-                    DEBUG(("===============================PICTURE TAKEN================================"));
                     picturesTaken++;
             }
-
+        }
+		//return distance(attTarget, myPos);
 	}
 float findMin(float a, float b)
 {
