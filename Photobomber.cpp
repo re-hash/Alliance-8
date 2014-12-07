@@ -79,7 +79,7 @@ void loop()
         myPos[i] = myState[i];
     }
     
-    if (game.getFuelRemaining() <= .30)
+    if (game.getFuelRemaining() <= 30)
     {
         arcMove(darkzone);
         //DEBUG(("\nGame over man, game over!"));
