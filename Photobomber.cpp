@@ -79,17 +79,24 @@ void loop()
         myPos[i] = myState[i];
     }
     
+    if (game.getFuelRemaining() <= .30)
+    {
+        arcMove(darkzone);
+        //DEBUG(("\nGame over man, game over!"));
+    }
     if (game.getFuelRemaining() <= 0)
     {
         game.turnOff();
         //DEBUG(("\nGame over man, game over!"));
     }
     
-    else if (game.getNextFlare() <20 && game.getNextFlare() !=-1)
+    else if (game.getNextFlare() <25 && game.getNextFlare() !=-1)
 	{
 	    arcMove(darkzone);
 	}
     else {
+        if (time > 4)
+        {
         api.getOtherZRState(otherState);
         
         for (int i = 0; i<3; i++) {
@@ -103,6 +110,7 @@ void loop()
         else {
             arcMove(otherState);
             DEBUG((" | Heading to otherState | "));
+        }
         }
     }
 
