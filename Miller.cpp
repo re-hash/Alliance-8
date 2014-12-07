@@ -25,7 +25,7 @@ void init(){
 	float myPos[3] = {myState[0], myState[1], myState[2]};
     if (myPos[1] > 0)
     {
-        color = 1;
+        color = -1;
         DEBUG(("We are blue!")); //Determine if SPHERE is red or blue
     }
     else
@@ -47,7 +47,7 @@ void loop(){
     	float poiLoc[3];
     	game.getPOILoc(poiLoc, targetPOI);
 	//This function is called once per second.  Use it to control the satellite.
-	if (game.getNextFlare() <20 && game.getNextFlare() !=-1)
+	if (game.getNextFlare() <17 && game.getNextFlare() !=-1)
 	{
 	    api.setPositionTarget(darkzone);
         float attTarget[3];
@@ -71,11 +71,11 @@ void loop(){
         game.getPOILoc(poiSpyLoc, targetPOI);
         if (poiSpyLoc[2]>0)
         {
-            color = 1;
+            color = -1;
         }
         else
         {
-            color = -1;
+            color = 1;
         }
 	}
 	else if (elapsed>180 && game.getMemoryFilled()>0)
@@ -106,12 +106,15 @@ void loop(){
         }
 	else
 	{
-    	float target[3] = {0.0, 0.0, color*0.4};
+    	
+    	float targetPOILoc[3];
+    	game.getPOILoc(targetPOILoc, targetPOI);
+    	float target[3] = {0.0, 0.0, color*0.44};
     	//float uploadTarget[3] = {0.1, 0.0, color*0.6};
 
     	api.setPositionTarget(target);
     	
-    	facePos(zero, myPos);
+    	facePos(zero, myPos); 
         if (game.getMemoryFilled()==game.getMemorySize()) 
         { //If SPHERE has a valid picture
             //DEBUG(("\n  Moving to upload"));
@@ -151,18 +154,18 @@ void facePos(float target[3], float myPos[3]){
 		mathVecNormalize(attTarget,3);
 		api.setAttitudeTarget(attTarget);
 		
-        if (distanceVec(myPos, target)< 0.50)
-        {
+
             //DEBUG(("The SPHERE is close enough to take a picture. ")); //    
             if (game.alignLine(targetPOI)==true)
             {
 
-                    //DEBUG(("\n  Pictures: %d", picturesTaken+1)); //      
+                    //DEBUG(("\n  Pictures: %d", picturesTaken+1)); // 
+                    
                     game.takePic(targetPOI);
+                    DEBUG(("===============================PICTURE TAKEN================================"));
                     picturesTaken++;
             }
-        }
-		//return distance(attTarget, myPos);
+
 	}
 float findMin(float a, float b)
 {
