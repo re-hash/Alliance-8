@@ -47,7 +47,7 @@ void loop(){
     	float poiLoc[3];
     	game.getPOILoc(poiLoc, targetPOI);
 	//This function is called once per second.  Use it to control the satellite.
-	if (game.getNextFlare() < 23 && game.getNextFlare() !=-1)
+	if (game.getNextFlare() < 25 && game.getNextFlare() !=-1)
 	{
 	    api.setPositionTarget(darkzone);
         float attTarget[3];
