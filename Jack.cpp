@@ -75,7 +75,7 @@ if (strategy==0)
                     
 
         game.getPOILoc(poiSpyLoc, targetPOI);
-        if (poiSpyLoc[2]>0.15)
+        if (poiSpyLoc[2]>0.2)
         {
             color = -1;
         }
@@ -112,12 +112,19 @@ if (strategy==0)
         }
 	else
 	{
-    	float target[3] = {0.0, 0.0, color*0.44};
-
-    	api.setPositionTarget(target);
-    	
-    	facePos(zero, myPos);
-        if (game.getMemoryFilled()==game.getMemorySize()) 
+    	    	if (game.getMemoryFilled()==0)
+    	{
+    	    float target[3] = {0.0, 0.0, color*0.44};
+    	    api.setPositionTarget(target);
+    	    facePos(zero, myPos);
+    	}
+    	else if (game.getMemoryFilled() == 1)
+    	{
+    	    float target[3] = {0.0, 0.0, color*0.4};
+    	    api.setPositionTarget(target);
+    	    facePos(zero, myPos);
+    	}
+        else if (game.getMemoryFilled()==game.getMemorySize())
         { //If SPHERE has a valid picture
             //DEBUG(("\n  Moving to upload"));
             //api.setPositionTarget(uploadTarget);
