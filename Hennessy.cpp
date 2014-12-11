@@ -31,10 +31,6 @@ void init()
 	earth[1]=0.0;
 	earth[2]=0.0;
 	
-	darkZone[0]=0.55;
-	darkZone[1]=0.1;
-	darkZone[2]=-0.15;
-	
 	api.getMyZRState(myState);
 	if (myState[1] > 0)
 	{
@@ -48,6 +44,10 @@ void init()
 	    side = -1; //Y-coord multiplier
 	    DEBUG(("We are Red"));
 	}
+	
+	darkZone[0]= 0.55;
+	darkZone[1]= side * 0.05;
+	darkZone[2]= -0.05;
 	
 	for (int i = 0; i<3; i++) {
         myPos[i] = myState[i];
@@ -83,9 +83,40 @@ void loop()
     else if (game.getNextFlare() < 27 && game.getNextFlare() !=-1)
 	{
 	    game.turnOn();
-	    api.setPositionTarget(darkZone);
-        upload();
-        game.getPOILoc(poiPos, targetPOI);
+	    
+	    float midpoint[3] = {(myPos[0]+darkZone[0])/2, (myPos[1]+darkZone[1])/2, (myPos[2]+darkZone[2])/2};
+        float qtl1[3] = {(myPos[0]+midpoint[0])/2, (myPos[1]+midpoint[1])/2, (myPos[2]+midpoint[2])/2};
+        float qtl3[3] = {(darkZone[0]+midpoint[0])/2, (darkZone[1]+midpoint[1])/2, (darkZone[2]+midpoint[2])/2};
+
+        if (mathVecMagnitude(midpoint,3) < 0.35) 
+        { 
+        // this part is really rough - with some tweaking of magnitudes and such, it might work better.
+            arcMove(midpoint, darkZone);
+            upload();
+        }
+        else 
+        { //Proceed to target coordinates as usual
+            if(mathVecMagnitude(qtl3, 3)>0.35)
+            {
+    		    if (mathVecMagnitude(qtl1,3)>0.35)
+    		    {
+    		    	api.setPositionTarget(darkZone);
+    		    	upload();
+    		    }
+    		    else
+    		    {
+    		     arcMove(midpoint, darkZone);
+    		     upload();
+    		    }	
+            }
+            else
+            {
+        	    arcMove(midpoint, darkZone);
+        	    upload();
+            }
+            upload();
+            game.getPOILoc(poiPos, targetPOI);
+	    }
 	}
     else
     {
@@ -245,3 +276,14 @@ void upload()
         DEBUG(("Upload failed!"));
     }
 }
+
+void arcMove(float midpoint2[3], float posTarget2[3])
+{
+    mathVecNormalize(midpoint2,3);
+ 	for (int i = 0; i<3; i++) {
+	 	midpoint2[i] *= 0.45;
+ 	}
+ 	api.setPositionTarget(midpoint2);
+ 	//DEBUG((" | Heading to waypoint | "));
+}
+
