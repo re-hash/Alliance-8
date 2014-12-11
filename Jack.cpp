@@ -7,9 +7,11 @@ int picturesTaken;
 int color;
 int elapsed;
 int strategy;
+int flareCounter;
 
 void init(){
 	//This function is called once when your code is first loaded.
+	flareCounter = 0;
 	elapsed = 0;
     zero[0]=0.0;
 	zero[1]=0.0;
@@ -51,7 +53,7 @@ if (strategy==0)
     	float poiLoc[3];
     	game.getPOILoc(poiLoc, targetPOI);
 	//This function is called once per second.  Use it to control the satellite.
-	if (game.getNextFlare() < 27 && game.getNextFlare() !=-1)
+	if (game.getNextFlare() < 25 && game.getNextFlare() !=-1)
 	{
 	    api.setPositionTarget(darkzone);
         float attTarget[3];
@@ -148,7 +150,11 @@ if (strategy==0)
     game.turnOff();
     //DEBUG(("\nGame over man, game over!"));
     }
-    if (game.getScore() < game.getOtherScore() && elapsed>200)
+    if (game.getNextFlare() == 29)
+    {
+        flareCounter++;
+    }
+    if (game.getScore() < game.getOtherScore() && (flareCounter/3)==2)
     {
         strategy = 1; 
     }
