@@ -39,12 +39,12 @@ void init()
 	{
 	    teamColor = 1;
 
-	    DEBUG(("We are Blue"));
+	    DEBUG(("We are blue"));
 	}
 	else
 	{
 	    teamColor = 0;
-	    DEBUG(("We are Red"));
+	    DEBUG(("We are red"));
 	}
 	
 	for (int i = 0; i<3; i++) {
@@ -100,7 +100,7 @@ void loop()
         api.getOtherZRState(otherState);
         
         for (int i = 0; i<3; i++) {
-            otherPos[i] = 0.5*otherState[i];
+            otherPos[i] = 1.08*otherState[i];
         }
         
         if (distanceVec(myPos,otherPos) < 0.38) {
@@ -160,10 +160,10 @@ void speedMove(float loc[3],float tarSpeed, ZRState myZRState) {
 void arcMove(float posTarget2[3])
 {
     float midpoint[3] = {(myPos[0]+posTarget2[0])/2, (myPos[1]+posTarget2[1])/2, (myPos[2]+posTarget2[2])/2};
-    if (mathVecMagnitude(midpoint,3) < 0.35) {
+    if (mathVecMagnitude(midpoint,3) < 0.29) {
         mathVecNormalize(midpoint,3);
      	for (int i = 0; i<3; i++) {
-    	 	midpoint[i] *= 0.45;
+    	 	midpoint[i] *= 0.48;
      	}
      	api.setPositionTarget(midpoint);
      	DEBUG((" | Heading to waypoint | "));
