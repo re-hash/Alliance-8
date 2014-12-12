@@ -16,6 +16,7 @@ int targetPOI;
 float poiPos[3];
 float posTarget[3];
 float poiSpyLoc[3];
+bool powerOn;
 
 //Counters
 int time;
@@ -77,6 +78,18 @@ void loop()
     api.getMyZRState(myState);
     for (int i = 0; i<3; i++) {
         myPos[i] = myState[i];
+    }
+    
+    // turn off if not in dark zone
+    if (game.getNextFlare() <= 2 && game.getNextFlare() != -1 && !((myPos[1]*myPos[1] + myPos[2]*myPos[2] <= mathSquare(0.191 + 0.02*game.getNextFlare())) && (myPos[0] > 0))) {      
+    //^if flare is coming & not in dark zone
+        api.setVelocityTarget(zero);
+        game.turnOff();
+        powerOn = false;
+   }
+    else if (!powerOn) {
+        game.turnOn();
+        powerOn = true;
     }
     
     //----Targetting----//
