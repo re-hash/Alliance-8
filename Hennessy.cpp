@@ -316,3 +316,21 @@ void arcMove(float posTarget2[3])
         api.setPositionTarget(posTarget2);
     }
 }
+void stayInBounds() { 
+	float force[3] = {0.00001,0.00001,0.00001};
+	//Tweak the numerical values as necessary based on the game boundaries.
+	if (myState[0] >=0.62 || myState[0] <=-0.62) {
+		force[0] = -myState[0];
+		DEBUG(("\n  Force X"));
+		
+	}
+	/*if (myState[1] >=0.76 || myState[1] <=-0.76) {
+			force[1] = -myState[1];
+				DEBUG(("\n  Force Y"));  
+	}
+	if (myState[2] >=0.62 || myState[2] <=-0.62) {
+			force[2] = -myState[2];
+					DEBUG(("\n  Force Z"));  
+	}*/
+	api.setForces(force);
+}
