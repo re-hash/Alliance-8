@@ -84,9 +84,12 @@ void loop()
     for (int i = 0; i<3; i++) {
         myPos[i] = myState[i];
     }
+    
     if (game.getScore() < lastScore){
         penaltyCounter++;
     }
+    lastScore = game.getScore();
+    
     /*
     // turn off if not in dark zone
     if (game.getNextFlare() <= 2 && game.getNextFlare() != -1 && !((myPos[1]*myPos[1] + myPos[2]*myPos[2] <= mathSquare(0.191 + 0.02*game.getNextFlare())) && (myPos[0] > 0))) {      
@@ -133,7 +136,7 @@ void loop()
             posTarget[i] = predictedPOIPos[i] * 2.25;
         }
     }
-    else if (game.getMemoryFilled() == game.getMemorySize())
+    else if (game.getMemoryFilled() >= game.getMemorySize())
     {
         upload();
     }
@@ -157,7 +160,7 @@ void loop()
         game.turnOff();
         DEBUG(("\nGame over man, game over!"));
     }
-    else if (time >= 235)
+    else if (game.getMemoryFilled() > 0 && time >= 235)
     {
         upload();
     }
@@ -214,7 +217,14 @@ void loop()
     else
     {
         arcMove(posTarget);
-        facePos(predictedPOIPos, myPos);
+        if (game.getMemoryFilled() >= game.getMemorySize())
+        {
+            upload();
+        }
+        else
+        {
+            facePos(predictedPOIPos, myPos);
+        }
     }
 }
 
