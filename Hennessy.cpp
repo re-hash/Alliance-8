@@ -160,7 +160,7 @@ void loop()
         game.turnOff();
         DEBUG(("\nGame over man, game over!"));
     }
-    else if (game.getMemoryFilled() > 0 && time >= 235)
+    else if (/*game.getMemoryFilled() > 0 &&*/ time >= 235)
     {
         upload();
     }
