@@ -22,9 +22,12 @@ bool powerOn;
 int time;
 int picturesTaken;
 int flareCounter;
+float lastScore;
+int penaltyCounter;
 
 void init()
 {
+    
     //----Coordinates & Positioning----//
     api.getMyZRState(myState);
 	
@@ -32,13 +35,13 @@ void init()
 	{
 	    teamColor = 0;
 	    side = 1; //Y-coord multiplier
-	    DEBUG(("We are Blue"));
+	    DEBUG(("We are blue"));
 	}
 	else
 	{
 	    teamColor = 1;
 	    side = -1; //Y-coord multiplier
-	    DEBUG(("We are Red"));
+	    DEBUG(("We are red"));
 	}
 	
     zero[0]=0.0;
@@ -66,12 +69,14 @@ void init()
 	time = 0;
 	picturesTaken = 0;
 	flareCounter = 0;
+	lastScore = 9.00f;
+	penaltyCounter = 0;
 }
 
 void loop()
 {
     //DEBUG(("\n  targetPOI: %d", targetPOI));
-    
+    DEBUG(("FLARE COUNTER: %d", flareCounter));
     //----Base Functions----//
     time = api.getTime();
     
@@ -79,7 +84,10 @@ void loop()
     for (int i = 0; i<3; i++) {
         myPos[i] = myState[i];
     }
-    
+    if (game.getScore() < lastScore){
+        penaltyCounter++;
+    }
+    /*
     // turn off if not in dark zone
     if (game.getNextFlare() <= 2 && game.getNextFlare() != -1 && !((myPos[1]*myPos[1] + myPos[2]*myPos[2] <= mathSquare(0.191 + 0.02*game.getNextFlare())) && (myPos[0] > 0))) {      
     //^if flare is coming & not in dark zone
@@ -90,9 +98,9 @@ void loop()
     else if (!powerOn) {
         game.turnOn();
         powerOn = true;
-    }
+    }*/
     
-    //----Targetting----//
+    //----Targeting----//
     game.getPOILoc(poiPos, targetPOI);
     
     float predictedPOIPos[3] = {-0.05, poiPos[1], spyLoc * sqrtf(0.04 - powf(poiPos[1], 2.0))}; 
@@ -153,7 +161,7 @@ void loop()
     {
         upload();
     }
-    else if (game.getNextFlare() < 21 && game.getNextFlare() !=-1)
+    else if (game.getNextFlare() < (21+penaltyCounter) && game.getNextFlare() !=-1)
 	{
 	    game.getPOILoc(poiSpyLoc, targetPOI);
 	    if (poiSpyLoc[2]>0.15)
@@ -181,7 +189,7 @@ void loop()
             arcMove(darkZone);
         }
 
-        if (game.getMemoryFilled() > 0)
+        if (game.getMemoryFilled()>0)
         {
             upload();
         }
@@ -190,6 +198,18 @@ void loop()
             facePos(predictedPOIPos, myPos);
         }
         
+	}
+	else if (flareCounter == 2 && game.getNextFlare()<=30 && game.getNextFlare() !=-1)
+	{
+	    ZRState otherState;
+        api.getOtherZRState(otherState);
+	    arcMove(darkZone); //Go straight to darkZone
+            
+            if (otherState[0]>0.22)//double check this
+            {
+                
+                darkZone[0] = otherState[0];
+            }
 	}
     else
     {
@@ -253,7 +273,7 @@ float distanceVec(float a[3], float b[3])
 void upload() 
 {
     float attTarget[3];
-    
+    DEBUG(("TURN TO UPLOAD"));
 	mathVecSubtract(attTarget,earth,myPos,3);
 	mathVecNormalize(attTarget,3);
 	
@@ -286,4 +306,3 @@ void arcMove(float posTarget2[3])
         api.setPositionTarget(posTarget2);
     }
 }
-
