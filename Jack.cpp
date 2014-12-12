@@ -7,11 +7,11 @@ int picturesTaken;
 int color;
 int elapsed;
 int strategy;
-int flareCounter;
+float flareCounter;
 
 void init(){
 	//This function is called once when your code is first loaded.
-	flareCounter = 0;
+	flareCounter = 0.0;
 	elapsed = 0;
     zero[0]=0.0;
 	zero[1]=0.0;
@@ -75,7 +75,7 @@ if (strategy==0)
                     
 
         game.getPOILoc(poiSpyLoc, targetPOI);
-        if (poiSpyLoc[2]>1.2)
+        if (poiSpyLoc[2]>0.2)
         {
             color = -1;
         }
@@ -112,19 +112,12 @@ if (strategy==0)
         }
 	else
 	{
-    	    	if (game.getMemoryFilled()==0)
-    	{
-    	    float target[3] = {0.0, 0.0, color*0.44};
-    	    api.setPositionTarget(target);
-    	    facePos(zero, myPos);
-    	}
-    	else if (game.getMemoryFilled() == 1)
-    	{
-    	    float target[3] = {0.0, 0.0, color*0.38};
-    	    api.setPositionTarget(target);
-    	    facePos(zero, myPos);
-    	}
-        else if (game.getMemoryFilled()==game.getMemorySize())
+    	float target[3] = {0.0, 0.0, color*0.46};
+
+    	api.setPositionTarget(target);
+    	
+    	facePos(zero, myPos);
+        if (game.getMemoryFilled()==game.getMemorySize()) 
         { //If SPHERE has a valid picture
             //DEBUG(("\n  Moving to upload"));
             //api.setPositionTarget(uploadTarget);
@@ -161,10 +154,17 @@ if (strategy==0)
     {
         flareCounter++;
     }
-    if (game.getScore() < game.getOtherScore() && (flareCounter/3)==2)
+    if ((flareCounter)==2.0f)
     {
-        strategy = 1; 
-        DEBUG(("WHO NEEDS HUGGING WHEN YOU CAN PHOTOBOMB?????"));
+        if (game.getScore()+1 < game.getOtherScore() && game.getMemoryFilled()==0)
+        {
+            strategy = 1; 
+            DEBUG(("STARTING TO PHOTOBOMB"));
+        }
+        else
+        {
+            DEBUG(("SAME STRAT"));
+        }
     }
 }
 else if (strategy==1)
@@ -213,7 +213,8 @@ else if (strategy==1)
 
     }
 }
-elapsed++;	
+elapsed++;
+DEBUG(("FlareCounter = %f", flareCounter));
 }
 
 void facePos(float target[3], float myPos[3]){
