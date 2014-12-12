@@ -8,6 +8,7 @@ int teamColor;
 int side;
 int spyLoc;
 float myPos[3];
+float otherPos[3];
 float otherXPos;
 float zero[3];
 float earth[3];
@@ -16,6 +17,7 @@ int targetPOI;
 float poiPos[3];
 float posTarget[3];
 float poiSpyLoc[3];
+float predictedPOIPos[3];
 
 //Counters
 int time;
@@ -40,6 +42,8 @@ void init()
 	    DEBUG(("We are Red"));
 	}
 	
+	spyLoc = -1;
+	
     zero[0]=0.0;
 	zero[1]=0.0;
 	zero[2]=0.0;
@@ -59,7 +63,6 @@ void init()
 	
 	//----Targeting----//
 	targetPOI = teamColor;
-	spyLoc = -1;
 	
 	//----Counters----//
 	time = 0;
@@ -75,26 +78,21 @@ void loop()
     time = api.getTime();
     
     api.getMyZRState(myState);
-    for (int i = 0; i<3; i++) {
+    for (int i = 0; i<3; i++) 
+    {
         myPos[i] = myState[i];
     }
     
     //----Targetting----//
     game.getPOILoc(poiPos, targetPOI);
     
-    float predictedPOIPos[3] = {-0.05, poiPos[1], spyLoc * sqrtf(0.04 - powf(poiPos[1], 2.0))}; 
+    predictedPOIPos[0] = -0.01;
+    predictedPOIPos[1] = poiPos[1];
+    predictedPOIPos[2] = spyLoc * sqrtf(0.04 - powf(poiPos[1], 2.0)); 
     
     if (time % 60 == 0)
     {
-        game.getPOILoc(poiSpyLoc, targetPOI);
-        if (poiSpyLoc[2]>0.1)
-        {
-            spyLoc = 1;
-        }
-        else
-        {
-            spyLoc = -1;
-        }
+        game.getPOILoc(poiPos, targetPOI);
         
         for (int i = 0; i < 3; i++)
         {
@@ -112,16 +110,16 @@ void loop()
             posTarget[i] = predictedPOIPos[i] * 2.25;
         }
     }
-    else if (game.getMemoryFilled() == game.getMemorySize())
+    else if (game.getMemoryFilled() == 1)
     {
-        upload();
+       for (int i = 0; i < 3; i++)
+        {
+            posTarget[i] = predictedPOIPos[i] * 1.95;
+        } 
     }
     else
     {
-        for (int i = 0; i < 3; i++)
-        {
-            posTarget[i] = predictedPOIPos[i] * 1.95;
-        }
+        upload();
     }
     
     //----Decision Making----//
@@ -140,10 +138,11 @@ void loop()
     {
         upload();
     }
-    else if (game.getNextFlare() < 21 && game.getNextFlare() !=-1)
+    else if (game.getNextFlare() <= 22 && game.getNextFlare() != -1)
 	{
 	    game.getPOILoc(poiSpyLoc, targetPOI);
-	    if (poiSpyLoc[2]>0.15)
+	    
+	    if (poiSpyLoc[2] > 0.15)
         {
             spyLoc = 1;
         }
@@ -153,19 +152,17 @@ void loop()
         }
         
         darkZone[2]= spyLoc * 0.05;
-	   
+        
+        arcMove(darkZone);
+
 	    if (flareCounter == 1) //Get other DZ pos
         {
-            arcMove(darkZone); //Go straight to darkZone
             
-            if (game.getNextFlare() < 5)
+            if (game.getNextFlare() == 1)
             {
-                darkZone[0] = checkDZ();
+                //darkZone[0] = checkDZ();
+                checkDZ();
             }
-        }
-        else
-        {
-            arcMove(darkZone);
         }
 
         if (game.getMemoryFilled() > 0)
@@ -180,33 +177,39 @@ void loop()
 	}
     else
     {
+        if (game.getMemoryFilled() == game.getMemorySize())
+        {
+            upload();
+        }
+        else
+        {
+            facePos(predictedPOIPos, myPos);
+        }
         arcMove(posTarget);
-        facePos(predictedPOIPos, myPos);
     }
 }
 
 //--------------------------------------HELPER METHODS-------------------------------------------//
-float checkDZ()
+void checkDZ()
 {
     api.getOtherZRState(otherState);
     
-    otherXPos = otherState[0];
+    for (int i = 0; i < 3; i++)
+    {
+        otherPos[i] = otherState[i];
+    }
     
-    if (otherXPos >= 0.5)
+    
+    mathVecNormalize(otherPos, 3);
+    
+    for (int i = 0; i < 3; i++)
     {
-        //DEBUG(("They're going long!"));
-        return 0.38;
+        otherPos[i] *= 0.20;
     }
-    else if (otherXPos >= 0.45)
-    {
-        //DEBUG(("They're going mid!"));
-        return 0.55;
-    }
-    else
-    {
-        //DEBUG(("They're going short!"));
-        return 0.55;
-    }
+    
+    darkZone[0] = 0.4;
+    darkZone[1] = otherPos[1];
+    darkZone[2] = otherPos[2];
 }
 
 
