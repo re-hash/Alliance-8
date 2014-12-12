@@ -164,7 +164,7 @@ if (strategy==0)
     if (game.getScore() < game.getOtherScore() && (flareCounter/3)==2)
     {
         strategy = 1; 
-        DEBUG(("WHO NEEDS HUGGING WHEN YOU CAN PHOTOBOMB?????"))
+        DEBUG(("WHO NEEDS HUGGING WHEN YOU CAN PHOTOBOMB?????"));
     }
 }
 else if (strategy==1)
