@@ -75,7 +75,7 @@ if (strategy==0)
                     
 
         game.getPOILoc(poiSpyLoc, targetPOI);
-        if (poiSpyLoc[2]>0.2)
+        if (poiSpyLoc[2]>1.2)
         {
             color = -1;
         }
