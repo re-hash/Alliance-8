@@ -164,7 +164,7 @@ void loop()
     {
         upload();
     }
-    else if (game.getNextFlare() < (23+penaltyCounter) && game.getNextFlare() !=-1)
+    else if (game.getNextFlare() < (27+penaltyCounter) && game.getNextFlare() !=-1)
 	{
 	    game.getPOILoc(poiSpyLoc, targetPOI);
 	    if (poiSpyLoc[2]>0.15)
